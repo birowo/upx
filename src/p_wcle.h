@@ -82,7 +82,7 @@ protected:
     // temporary copy of the object descriptors
     MemBuffer iobject_desc;
 
-    int big_relocs;
+    bool big_relocs;
     bool has_extra_code;
     unsigned neweip;
 };

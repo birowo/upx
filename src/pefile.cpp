@@ -412,9 +412,10 @@ void PeFile32::processRelocs() // pass1
 
     ibuf.fill(IDADDR(PEDIR_RELOC), IDSIZE(PEDIR_RELOC), FILLVAL);
     orelocs = new upx_byte [mem_size(4, rnum, 1024)];  // 1024 - safety
-    sorelocs = ptr_diff(optimizeReloc32((upx_byte*) fix[3], xcounts[3],
-                                        orelocs, ibuf + rvamin,1, &big_relocs),
-                        orelocs);
+    bool big;
+    sorelocs = optimizeReloc32((upx_byte*) fix[3], xcounts[3],
+                               orelocs, ibuf + rvamin, true, &big),
+    big_relocs = big ? 1 : 0;
     delete [] fix[3];
 
     // Malware that hides behind UPX often has PE header info that is
@@ -510,9 +511,10 @@ void PeFile64::processRelocs() // pass1
 
     ibuf.fill(IDADDR(PEDIR_RELOC), IDSIZE(PEDIR_RELOC), FILLVAL);
     orelocs = new upx_byte [mem_size(4, rnum, 1024)];  // 1024 - safety
-    sorelocs = ptr_diff(optimizeReloc64((upx_byte*) fix[10], xcounts[10],
-                                        orelocs, ibuf + rvamin,1, &big_relocs),
-                        orelocs);
+    bool big;
+    sorelocs = optimizeReloc64((upx_byte*) fix[10], xcounts[10],
+                               orelocs, ibuf + rvamin, true, &big);
+    big_relocs = big ? 1 : 0;
 
     for (ic = 15; ic; ic--)
         delete [] fix[ic];
@@ -2577,7 +2579,7 @@ void PeFile::rebuildRelocs(upx_byte *& extrainfo, unsigned bits,
 //    upx_byte *p = rdata;
     OPTR_I(upx_byte, p, rdata);
     MemBuffer wrkmem;
-    unsigned relocn = unoptimizeReloc(&rdata,obuf,&wrkmem,1,bits);
+    unsigned relocn = unoptimizeReloc(&rdata,obuf,&wrkmem,true,bits);
     unsigned r16 = 0;
     if (big & 6)                // 16 bit relocations
     {

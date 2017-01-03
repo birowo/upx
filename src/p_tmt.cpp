@@ -194,7 +194,7 @@ bool PackTmt::canPack()
 
 void PackTmt::pack(OutputFile *fo)
 {
-    big_relocs = 0;
+    big_relocs = false;
 
     Packer::handleStub(fi,fo,adam_offset);
 
@@ -224,7 +224,7 @@ void PackTmt::pack(OutputFile *fo)
     {
         for (unsigned ic=4; ic<=rsize; ic+=4)
             set_le32(wrkmem+ic,get_le32(wrkmem+ic)-4);
-        relocsize = ptr_diff(optimizeReloc32(wrkmem+4,rsize/4,wrkmem,ibuf,1,&big_relocs), wrkmem);
+        relocsize = optimizeReloc32(wrkmem+4,rsize/4,wrkmem,ibuf,true,&big_relocs);
     }
 
     wrkmem[relocsize++] = 0;

@@ -168,7 +168,7 @@ protected:
     unsigned rvamin;
     unsigned cimports;              // rva of preprocessed imports
     unsigned crelocs;               // rva of preprocessed fixups
-    int big_relocs;
+    unsigned big_relocs;
 
     __packed_struct(ddirs_t)
         LE32    vaddr;

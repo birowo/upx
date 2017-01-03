@@ -63,7 +63,7 @@ protected:
     virtual Linker* newLinker() const;
 
     unsigned adam_offset;
-    int big_relocs;
+    bool big_relocs;
 
     struct tmt_header_t
     {
