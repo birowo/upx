@@ -39,7 +39,6 @@
 //
 **************************************************************************/
 
-#include "bptr.h"
 #define IPTR(type, var)         BoundedPtr<type> var(ibuf, ibuf.getSize())
 #define OPTR(type, var)         BoundedPtr<type> var(obuf, obuf.getSize())
 #define IPTR_I_D(type, var, disp) \
@@ -413,8 +412,9 @@ void PeFile32::processRelocs() // pass1
     ibuf.fill(IDADDR(PEDIR_RELOC), IDSIZE(PEDIR_RELOC), FILLVAL);
     orelocs = new upx_byte [mem_size(4, rnum, 1024)];  // 1024 - safety
     bool big;
+    BoundedBytePtr rimage(ibuf + rvamin, ibuf.getSize() - rvamin, ibuf + rvamin);
     sorelocs = optimizeReloc32((upx_byte*) fix[3], xcounts[3],
-                               orelocs, ibuf + rvamin, true, &big),
+                               orelocs, rimage, &big);
     big_relocs = big ? 1 : 0;
     delete [] fix[3];
 
@@ -512,8 +512,9 @@ void PeFile64::processRelocs() // pass1
     ibuf.fill(IDADDR(PEDIR_RELOC), IDSIZE(PEDIR_RELOC), FILLVAL);
     orelocs = new upx_byte [mem_size(4, rnum, 1024)];  // 1024 - safety
     bool big;
+    BoundedBytePtr rimage(ibuf + rvamin, ibuf.getSize() - rvamin, ibuf + rvamin);
     sorelocs = optimizeReloc64((upx_byte*) fix[10], xcounts[10],
-                               orelocs, ibuf + rvamin, true, &big);
+                               orelocs, rimage, &big);
     big_relocs = big ? 1 : 0;
 
     for (ic = 15; ic; ic--)
@@ -2579,7 +2580,8 @@ void PeFile::rebuildRelocs(upx_byte *& extrainfo, unsigned bits,
 //    upx_byte *p = rdata;
     OPTR_I(upx_byte, p, rdata);
     MemBuffer wrkmem;
-    unsigned relocn = unoptimizeReloc(&rdata,obuf,&wrkmem,true,bits);
+    BoundedBytePtr rimage(obuf, obuf.getSize(), obuf);
+    unsigned relocn = unoptimizeReloc(&rdata, &wrkmem, rimage, true, bits);
     unsigned r16 = 0;
     if (big & 6)                // 16 bit relocations
     {

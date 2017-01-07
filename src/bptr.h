@@ -75,6 +75,11 @@ public:
         checkNULL(); ptr_ += 1; checkRange(); return *this;
     }
 
+    void checkOffset(size_t off) const {
+        if __acc_very_unlikely(off > size_in_bytes_)
+            throwCantUnpack("pointer out of range; take care!");
+    }
+
 private:
     void checkNULL() const {
         if __acc_very_unlikely(!ptr_)
@@ -99,6 +104,9 @@ private:
     // disable dynamic allocation
     DISABLE_NEW_DELETE
 };
+
+
+typedef BoundedPtr<unsigned char> BoundedBytePtr;
 
 
 #endif /* already included */

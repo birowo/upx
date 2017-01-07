@@ -399,7 +399,8 @@ void PackWcle::preprocessFixups()
         delete[] ifixups;
         ifixups = new upx_byte[1000];
     }
-    fix = ifixups + optimizeReloc32 (rl,rc,ifixups,iimage,true,&big_relocs);
+    BoundedBytePtr rimage(iimage, iimage.getSize(), iimage);
+    fix = ifixups + optimizeReloc32(rl, rc, ifixups, rimage, &big_relocs);
     has_extra_code = srf != selector_fixups;
     // FIXME: this could be removed if has_extra_code = false
     // but then we'll need a flag
@@ -582,7 +583,8 @@ void PackWcle::decodeFixups()
     iimage.dealloc();
 
     MemBuffer tmpbuf;
-    unsigned fixupn = unoptimizeReloc32(&p,oimage,&tmpbuf,true);
+    BoundedBytePtr rimage(oimage, oimage.getSize(), oimage);
+    unsigned fixupn = unoptimizeReloc32(&p, &tmpbuf, rimage);
 
     MemBuffer wrkmem(8*fixupn+8);
     unsigned ic,jc,o,r;

@@ -224,7 +224,8 @@ void PackTmt::pack(OutputFile *fo)
     {
         for (unsigned ic=4; ic<=rsize; ic+=4)
             set_le32(wrkmem+ic,get_le32(wrkmem+ic)-4);
-        relocsize = optimizeReloc32(wrkmem+4,rsize/4,wrkmem,ibuf,true,&big_relocs);
+        BoundedBytePtr rimage(ibuf, ibuf.getSize(), ibuf);
+        relocsize = optimizeReloc32(wrkmem+4, rsize/4, wrkmem, rimage, &big_relocs);
     }
 
     wrkmem[relocsize++] = 0;
@@ -335,7 +336,8 @@ void PackTmt::unpack(OutputFile *fo)
 
     // decode relocations
     MemBuffer wrkmem;
-    unsigned relocn = unoptimizeReloc32(&relocs,obuf,&wrkmem,1);
+    BoundedBytePtr rimage(obuf, obuf.getSize(), obuf);
+    unsigned relocn = unoptimizeReloc32(&relocs, &wrkmem, rimage);
     for (unsigned ic = 0; ic < relocn; ic++)
         set_le32(wrkmem+ic*4,get_le32(wrkmem+ic*4)+4);
 

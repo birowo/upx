@@ -29,6 +29,7 @@
 #ifndef __UPX_PACKER_H
 #define __UPX_PACKER_H 1
 
+#include "bptr.h"
 #include "mem.h"
 
 class InputFile;
@@ -284,12 +285,18 @@ protected:
     void checkPatch(void *b, int blen, int boff, int size);
 
     // relocation util
-    static unsigned optimizeReloc(upx_byte *in,unsigned relocnum,upx_byte *out,upx_byte *image,bool bswap,bool *big, int bits);
-    static unsigned unoptimizeReloc(upx_byte **in,upx_byte *image,MemBuffer *out,bool bswap, int bits);
-    static unsigned optimizeReloc32(upx_byte *in,unsigned relocnum,upx_byte *out,upx_byte *image,bool bswap,bool *big);
-    static unsigned unoptimizeReloc32(upx_byte **in,upx_byte *image,MemBuffer *out,bool bswap);
-    static unsigned optimizeReloc64(upx_byte *in,unsigned relocnum,upx_byte *out,upx_byte *image,bool bswap,bool *big);
-    static unsigned unoptimizeReloc64(upx_byte **in,upx_byte *image,MemBuffer *out,bool bswap);
+    static unsigned optimizeReloc  (upx_byte *in, unsigned relocnum, upx_byte *out, BoundedBytePtr &image,
+                                    bool *big, bool bswap, unsigned bits);
+    static unsigned optimizeReloc32(upx_byte *in, unsigned relocnum, upx_byte *out, BoundedBytePtr &image,
+                                    bool *big, bool bswap=true);
+    static unsigned optimizeReloc64(upx_byte *in, unsigned relocnum, upx_byte *out, BoundedBytePtr &image,
+                                    bool *big, bool bswap=true);
+    static unsigned unoptimizeReloc  (upx_byte **in, MemBuffer *out, BoundedBytePtr &image,
+                                      bool bswap, unsigned bits);
+    static unsigned unoptimizeReloc32(upx_byte **in, MemBuffer *out, BoundedBytePtr &image,
+                                      bool bswap=true);
+    static unsigned unoptimizeReloc64(upx_byte **in, MemBuffer *out, BoundedBytePtr &image,
+                                      bool bswap=true);
 
     // target endianness abstraction
     unsigned get_te16(const void *p)       const { return bele->get16(p); }

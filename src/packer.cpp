@@ -918,23 +918,23 @@ int Packer::patch_le32(void *b, int blen, const void *old, unsigned new_)
 **************************************************************************/
 
 unsigned Packer::optimizeReloc(upx_byte *in, unsigned relocnum,
-                               upx_byte *out, upx_byte *image,
-                               bool bswap, bool *big, int bits)
+                               upx_byte *out, BoundedBytePtr &image,
+                               bool *big, bool bswap, unsigned bits)
 {
+    assert(bits == 32 || bits == 64);
     *big = false;
     if (relocnum == 0)
         return 0;
     if (opt->exact)
         throwCantPackExact();
-    qsort(in,relocnum,4,le32_compare);
 
-    unsigned jc,pc,oc;
+    qsort(in, relocnum, 4, le32_compare);
+
     upx_byte *fix = out;
-
-    pc = (unsigned) -4;
-    for (jc = 0; jc<relocnum; jc++)
+    unsigned pc = (unsigned) -4;
+    for (unsigned jc = 0; jc < relocnum; jc++)
     {
-        oc = get_le32(in+jc*4) - pc;
+        unsigned oc = get_le32(in+jc*4) - pc;
         if (oc == 0)
             continue;
         else if ((int)oc < 4)
@@ -959,12 +959,11 @@ unsigned Packer::optimizeReloc(upx_byte *in, unsigned relocnum,
         pc += oc;
         if (bswap)
         {
+            image.checkOffset(pc + bits / 8);
             if (bits == 32)
                 acc_ua_swab32s(image + pc);
-            else if (bits == 64)
-                set_be64(image + pc, get_le64(image + pc));
             else
-                throwInternalError("optimizeReloc problem");
+                set_be64(image + pc, get_le64(image + pc));
         }
     }
     *fix++ = 0;
@@ -972,36 +971,36 @@ unsigned Packer::optimizeReloc(upx_byte *in, unsigned relocnum,
 }
 
 unsigned Packer::optimizeReloc32(upx_byte *in, unsigned relocnum,
-                                 upx_byte *out, upx_byte *image,
-                                 bool bswap, bool *big)
+                                 upx_byte *out, BoundedBytePtr &image,
+                                 bool *big, bool bswap)
 {
-    return optimizeReloc(in, relocnum, out, image, bswap, big, 32);
+    return optimizeReloc(in, relocnum, out, image, big, bswap, 32);
 }
 
 unsigned Packer::optimizeReloc64(upx_byte *in, unsigned relocnum,
-                                 upx_byte *out, upx_byte *image,
-                                 bool bswap, bool *big)
+                                 upx_byte *out, BoundedBytePtr &image,
+                                 bool *big, bool bswap)
 {
-    return optimizeReloc(in, relocnum, out, image, bswap, big, 64);
+    return optimizeReloc(in, relocnum, out, image, big, bswap, 64);
 }
 
 
-unsigned Packer::unoptimizeReloc(upx_byte **in, upx_byte *image,
-                                 MemBuffer *out, bool bswap, int bits)
+unsigned Packer::unoptimizeReloc(upx_byte **in, MemBuffer *out,
+                                 BoundedBytePtr &image, bool bswap, unsigned bits)
 {
+    assert(bits == 32 || bits == 64);
     upx_byte *p;
-    unsigned relocn = 0;
-    for (p = *in; *p; p++, relocn++)
+    unsigned relocnum = 0;
+    for (p = *in; *p; p++, relocnum++)
         if (*p >= 0xF0)
         {
             if (*p == 0xF0 && get_le16(p+1) == 0)
                 p += 4;
             p += 2;
         }
-    //fprintf(stderr,"relocnum=%x\n",relocn);
-    out->alloc(4*relocn+4); // one extra data
-    LE32 *outp = (LE32*) (unsigned char *) *out;
-    LE32 *relocs = outp;
+    //fprintf(stderr,"relocnum=%x\n",relocnum);
+    out->alloc(mem_size(4, relocnum + 1)); // one extra data
+    LE32 *relocs = (LE32 *) out->getVoidPtr();
     unsigned jc = (unsigned) -4;
     for (p = *in; *p; p++)
     {
@@ -1019,31 +1018,30 @@ unsigned Packer::unoptimizeReloc(upx_byte **in, upx_byte *image,
             jc += dif;
         }
         *relocs++ = jc;
-        if (bswap && image)
+        if (bswap && image != NULL)
         {
+            image.checkOffset(jc + bits / 8);
             if (bits == 32)
                 acc_ua_swab32s(image + jc);
-            else if (bits == 64)
-                set_be64(image + jc, get_le64(image + jc));
             else
-                throwInternalError("unoptimizeReloc problem");
+                set_be64(image + jc, get_le64(image + jc));
         }
     }
-    //fprintf(stderr,"relocnum=%x\n",relocn);
-    *in = p+1;
-    return ptr_udiff(relocs, outp);
+    //fprintf(stderr,"relocnum=%x\n",relocnum);
+    *in = p + 1;
+    return ptr_udiff(relocs, out->getVoidPtr());
 }
 
-unsigned Packer::unoptimizeReloc32(upx_byte **in, upx_byte *image,
-                                   MemBuffer *out, bool bswap)
+unsigned Packer::unoptimizeReloc32(upx_byte **in, MemBuffer *out,
+                                   BoundedBytePtr &image, bool bswap)
 {
-    return unoptimizeReloc(in, image, out, bswap, 32);
+    return unoptimizeReloc(in, out, image, bswap, 32);
 }
 
-unsigned Packer::unoptimizeReloc64(upx_byte **in, upx_byte *image,
-                                   MemBuffer *out, bool bswap)
+unsigned Packer::unoptimizeReloc64(upx_byte **in, MemBuffer *out,
+                                   BoundedBytePtr &image, bool bswap)
 {
-    return unoptimizeReloc(in, image, out, bswap, 64);
+    return unoptimizeReloc(in, out, image, bswap, 64);
 }
 
 /*************************************************************************
