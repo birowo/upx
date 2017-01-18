@@ -2,8 +2,8 @@
 
    This file is part of the UPX executable compressor.
 
-   Copyright (C) 1996-2016 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1996-2016 Laszlo Molnar
+   Copyright (C) 1996-2017 Markus Franz Xaver Johannes Oberhumer
+   Copyright (C) 1996-2017 Laszlo Molnar
    All Rights Reserved.
 
    UPX and the UCL library are free software; you can redistribute them
@@ -65,6 +65,7 @@ ACC_COMPILE_TIME_ASSERT_HEADER((char)(-1) > 0) // -funsigned-char
 #  pragma warning(error: 4805)
 #  pragma warning(disable: 4244) // -Wconversion
 #  pragma warning(disable: 4267) // -Wconversion
+#  pragma warning(disable: 4820) // padding added after data member
 #endif
 
 // FIXME - quick hack for arm-wince-gcc-3.4 (Debian pocketpc-*.deb packages)

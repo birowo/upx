@@ -2,8 +2,8 @@
 
    This file is part of the UPX executable compressor.
 
-   Copyright (C) 1996-2016 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1996-2016 Laszlo Molnar
+   Copyright (C) 1996-2017 Markus Franz Xaver Johannes Oberhumer
+   Copyright (C) 1996-2017 Laszlo Molnar
    All Rights Reserved.
 
    UPX and the UCL library are free software; you can redistribute them
@@ -180,7 +180,7 @@ bool PackW64Pep::handleForceOption()
         || (ih.opthdrsize != 0xF0) //optional header size is 0xF0 in PE32+ files - Stefan Widmann
         || (ih.coffmagic != 0x20B) //COFF magic is 0x20B in PE+ files, 0x10B in "normal" 32 bit PE files - Stefan Widmann
         || ((ih.flags & EXECUTABLE) == 0)
-        || ((ih.flags & BITS_32_MACHINE) == 1) //NEW: 32 bit machine flag may not be set - Stefan Widmann
+        || ((ih.flags & BITS_32_MACHINE) != 0) //NEW: 32 bit machine flag may not be set - Stefan Widmann
         || (ih.entry == 0 && !isdll)
         || (ih.ddirsentries != 16)
         ;

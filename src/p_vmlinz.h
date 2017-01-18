@@ -2,8 +2,8 @@
 
    This file is part of the UPX executable compressor.
 
-   Copyright (C) 1996-2016 Markus Franz Xaver Johannes Oberhumer
-   Copyright (C) 1996-2016 Laszlo Molnar
+   Copyright (C) 1996-2017 Markus Franz Xaver Johannes Oberhumer
+   Copyright (C) 1996-2017 Laszlo Molnar
    All Rights Reserved.
 
    UPX and the UCL library are free software; you can redistribute them
@@ -150,7 +150,7 @@ protected:
     virtual void readKernel();
 
     virtual void buildLoader(const Filter *ft);
-    virtual unsigned write_vmlinuz_head(OutputFile *const fo);
+    virtual unsigned write_vmlinuz_head(OutputFile *fo);
     virtual void defineDecompressorSymbols();
     virtual Linker* newLinker() const;
 
